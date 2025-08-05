@@ -1,0 +1,9 @@
+sklearn-env/
+sklearn-env/
+datasets/
+videos/
+video/
+assets/ASL/
+archived/
+__pycache__/
+NLP/

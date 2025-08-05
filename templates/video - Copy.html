@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Language Recognition</title>
+    <style>
+        #webcam-feed {
+            transform: scaleX(-1); /* Flips the video horizontally */
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-time Sign Language Recognition</h1>
+        <video id="webcam-feed" autoplay controls muted width="320" height="240"></video>
+    <h2 id="recognized-sentence"></h2>
+
+    <script>
+        const video = document.getElementById('webcam-feed');
+        const sentenceDisplay = document.getElementById('recognized-sentence');
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const socket = new WebSocket(ws_scheme + '://' + '127.0.0.1:8000' + '/ws/video/');
+
+        // --- THIS IS THE ONLY PART THAT HAS CHANGED ---
+        // Set the source of the video to a file
+        // IMPORTANT: Replace "your_video_file.mp4" with the path to your video file
+        video.src ="C:/Users/HP_VICTUS/Downloads/Project/silent_voice/videos/69544.mp4"; 
+
+        // ---------------------------------------------
+        
+        // The rest of the code is unchanged because it already draws from the <video> element.
+    video.addEventListener('play', () => {
+        function sendFrame() {
+            if (socket.readyState === WebSocket.OPEN) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = canvas.toDataURL('image/jpeg', 0.6);
+
+                socket.send(JSON.stringify({ 'frame': imageData }));
+            }
+
+            setTimeout(sendFrame, 25);
+        }
+        
+        setTimeout(sendFrame, 25);
+    });
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        sentenceDisplay.textContent = data.sentence;
+    };
+    </script>
+</body>
+</html>
